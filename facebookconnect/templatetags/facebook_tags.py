@@ -130,7 +130,7 @@ def show_connect_button(context):
 
 @register.simple_tag
 def facebook_js():
-    return '<script src="http://static.ak.connect.facebook.com/js/api_lib/v0.4/FeatureLoader.js.php" type="text/javascript"></script>'
+    return '<script src="http://connect.facebook.net/en_US/all.js" type="text/javascript"></script>'
 
 @register.simple_tag
 def show_logout():
