@@ -21,14 +21,16 @@ import logging
 log = logging.getLogger('facebookconnect.middleware')
 import warnings
 from datetime import datetime
+from urllib2 import URLError
+
 from django.core.urlresolvers import reverse
 from django.contrib.auth import logout,login
 from django.conf import settings
-from facebook import Facebook,FacebookError
 from django.template import TemplateSyntaxError
 from django.http import HttpResponseRedirect,HttpResponse
-from urllib2 import URLError
+
 from facebookconnect.models import FacebookProfile
+import facebook
 
 try:
     from threading import local
@@ -36,6 +38,31 @@ except ImportError:
     from django.utils._threading_local import local
 
 _thread_locals = local()
+
+
+class Facebook(object):
+    """Dummy class to deal w/ pyfacebook dependency"""
+    
+    session_key = None
+    uid = None
+    graph = None
+
+
+class FacebookMiddleware(object):
+    """Port of the FacebookMiddleware from pyfacebook"""
+    
+    def process_request(self,request):
+        fbuser = facebook.get_user_from_cookie(request.COOKIES, 
+                                               settings.FACEBOOK_APP_ID, 
+                                               settings.FACEBOOK_SECRET_KEY)
+        fb = Facebook()
+        
+        if fbuser:
+            fb.uid = fbuser["uid"]
+            fb.session_key = fbuser["access_token"]
+            fb.graph = facebook.GraphAPI(fbuser["access_token"])
+        
+        _thread_locals.facebook = request.facebook = fb
 
 class FacebookConnectMiddleware(object):
     """Middlware to provide a working facebook object"""
@@ -49,10 +76,13 @@ class FacebookConnectMiddleware(object):
         try:
             # This is true if anyone has ever used the browser to log in to
             # facebook with an acount that has accepted this application.
-            bona_fide = request.facebook.check_session(request)
-            uid = request.facebook.uid
+            fbuser = facebook.get_user_from_cookie(request.COOKIES, 
+                                                   settings.FACEBOOK_APP_ID, 
+                                                   settings.FACEBOOK_SECRET_KEY)
+            bona_fide = fbuser != None
+            uid = fbuser["uid"] if fbuser else None
             if not request.path.startswith(settings.MEDIA_URL):
-              log.debug("Bona Fide: %s, Logged in: %s" % (bona_fide, uid))
+                log.debug("Bona Fide: %s, Logged in: %s" % (bona_fide, uid))
 
             if bona_fide and uid:
                 user = request.user
@@ -71,7 +101,7 @@ class FacebookConnectMiddleware(object):
                         fbp = FacebookProfile.objects.get(user=user)
 
                         if fbp.facebook_only():
-                            cur_user = request.facebook.users.getLoggedInUser()
+                            cur_user = fbuser["uid"]
                             if int(cur_user) != int(request.facebook.uid):
                                 logout(request)
                                 request.facebook.session_key = None
@@ -96,14 +126,14 @@ class FacebookConnectMiddleware(object):
             if getattr(exception,'exc_info',False):
                 my_ex = exception.exc_info[1]
 
-        if type(my_ex) == FacebookError:
+        if type(my_ex) == facebook.GraphAPIError:
             # we get this error if the facebook session is timed out
             # we should log out the user and send them to somewhere useful
-            if my_ex.code is 102:
+            if my_ex.type is "OAuthException":
                 logout(request)
                 request.facebook.session_key = None
                 request.facebook.uid = None
-                log.error('102, session')
+                log.error(my_ex.type, my_ex.message)
                 return HttpResponseRedirect(reverse('facebookconnect.views.facebook_login'))
         elif type(my_ex) == URLError:
             if my_ex.reason is 104:

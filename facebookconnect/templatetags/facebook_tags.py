@@ -24,14 +24,13 @@ from django.template.loader import render_to_string
 from django.contrib.sites.models import Site
 from django.contrib.auth import REDIRECT_FIELD_NAME
 
-from facebook.djangofb import get_facebook_client
 from facebookconnect.models import FacebookTemplate, FacebookProfile
 
 register = template.Library()
     
 @register.inclusion_tag('facebook/js.html')
 def initialize_facebook_connect():
-    return {'facebook_api_key': settings.FACEBOOK_API_KEY}
+    return {'facebook_app_id': settings.FACEBOOK_APP_ID}
 
 @register.inclusion_tag('facebook/show_string.html', takes_context=True)
 def show_facebook_name(context, user):

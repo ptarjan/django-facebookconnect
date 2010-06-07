@@ -23,8 +23,7 @@ log = logging.getLogger('facebookconnect.models')
 import sha, random
 from urllib2 import URLError
 
-from facebook.djangofb import Facebook,get_facebook_client
-from facebook import FacebookError
+import facebook
 
 from django.db import models
 from django.conf import settings
@@ -40,14 +39,27 @@ except ImportError:
 
 _thread_locals = local()
 
+
+def get_facebook_client():
+    """
+    Get the current Facebook object for the calling thread.
+
+    """
+    try:
+        return _thread_locals.facebook
+    except AttributeError:
+        raise ImproperlyConfigured('Make sure you have the Facebook middleware installed.')
+
+
 class FacebookBackend:
     def authenticate(self, request=None):
-        fb = get_facebook_client()
-        fb.check_session(request)
-        if fb.uid:
+        user = facebook.get_user_from_cookie(request.COOKIES, 
+                                             settings.FACEBOOK_APP_ID, 
+                                             settings.FACEBOOK_SECRET_KEY)
+        if user:
             try:
-                log.debug("Checking for Facebook Profile %s..." % fb.uid)
-                fbprofile = FacebookProfile.objects.get(facebook_id=fb.uid)
+                log.debug("Checking for Facebook Profile %s..." % user["uid"])
+                fbprofile = FacebookProfile.objects.get(facebook_id=user["uid"])
                 return fbprofile.user
             except FacebookProfile.DoesNotExist:
                 log.debug("FB account hasn't been used before...")
@@ -56,7 +68,7 @@ class FacebookBackend:
                 log.error("FB account exists without an account.")
                 return None
         else:
-            log.debug("Invalid Facebook login for %s" % fb.__dict__)
+            log.debug("Invalid Facebook login")
             return None
         
     def get_user(self, user_id):
@@ -257,10 +269,7 @@ class FacebookProfile(models.Model):
         
         if len(ids_to_get) > 0:
             log.debug("Calling for %s" % ids_to_get)
-            tmp_info = _facebook_obj.users.getInfo(
-                            ids_to_get, 
-                            self.FACEBOOK_FIELDS
-                        )
+            tmp_info = _facebook_obj.graph.get_objects(ids_to_get)
             
             all_info.extend(tmp_info)
             for info in tmp_info:
@@ -295,7 +304,7 @@ class FacebookProfile(models.Model):
                 return True
         except ImproperlyConfigured, ex:
             log.error('Facebook not setup')
-        except (FacebookError,URLError), ex:
+        except URLError, ex:
             log.error('Fail loading profile: %s' % ex)
         # except IndexError, ex:
         #     log.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id, self.id, self.user_id))

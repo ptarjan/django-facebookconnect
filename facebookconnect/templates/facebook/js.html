@@ -1,13 +1,17 @@
 <script type="text/javascript">
     FB.init({
-        appId  : '{{ facebook_api_key }}',
-        status : true, // check login status
-        cookie : true, // enable cookies to allow the server to access the session
-        xfbml  : true  // parse XFBML
-    });
+	  appId  : '{{ facebook_app_id }}',
+	  status : true, // check login status
+	  cookie : true, // enable cookies to allow the server to access the session
+	  xfbml  : true  // parse XFBML
+	});
     function facebookConnect(loginForm) {
-        FB.Connect.requireSession();
-        FB.Facebook.get_sessionState().waitUntilReady(function(){loginForm.submit();});
+        FB.login(function(response) {
+		  if (response.session) {
+		    // user successfully logged in
+		    loginForm.submit();
+		  }
+		});
     }
     function pushToFacebookFeed(data){
         if(data['success']){

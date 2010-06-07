@@ -29,8 +29,6 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.conf import settings
 
-from facebook.djangofb import require_login as require_fb_login
-
 from facebookconnect.models import FacebookProfile
 from facebookconnect.forms import FacebookUserCreationForm
 
@@ -169,7 +167,7 @@ def setup(request,redirect_url=None,
     if not request.facebook.uid:
         log.debug('Need to be logged into facebook')
         url = reverse(facebook_login)
-        if request.REQUEST.get(REDIRECT_FIELD_NAME,False):
+        if request.REQUEST.get(REDIRECT_FIELD_NAME, False):
             url += "?%s=%s" % (REDIRECT_FIELD_NAME, request.REQUEST[REDIRECT_FIELD_NAME])
         return HttpResponseRedirect(url)
 
@@ -186,7 +184,7 @@ def setup(request,redirect_url=None,
     #check that this fb user is not already in the system
     try:
         FacebookProfile.objects.get(facebook_id=request.facebook.uid)
-        # already setup, move along please
+        log.debug("already setup, move along please")
         return HttpResponseRedirect(redirect_url)
     except FacebookProfile.DoesNotExist, e:
         # not in the db, ok to continue
