@@ -51,7 +51,9 @@ class FacebookMiddleware(object):
                                                settings.FACEBOOK_APP_ID, 
                                                settings.FACEBOOK_SECRET_KEY)
         
-        request.facebook = LocalFacebookClient(fbuser["uid"], fbuser["access_token"])
+        uid = fbuser.get("uid") if fbuser else None
+        access_token = fbuser.get("access_token") if fbuser else None
+        request.facebook = LocalFacebookClient(uid, access_token)
 
 
 class FacebookConnectMiddleware(object):
