@@ -1,4 +1,6 @@
 
+from django.core.exceptions import ImproperlyConfigured
+
 import facebook
 
 try:

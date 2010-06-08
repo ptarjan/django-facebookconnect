@@ -127,7 +127,10 @@ class FacebookProfile(models.Model):
             
     def __get_picture_url(self):
        _facebook_obj = get_facebook_client()
-       return "https://graph.facebook.com/me/picture?access_token=%s" % _facebook_obj.access_token
+       if self.__configure_me():
+           return "https://graph.facebook.com/me/picture?access_token=%s" % _facebook_obj.access_token
+       else:
+           return self.DUMMY_FACEBOOK_INFO['pic_square_with_logo']
     
     picture_url = property(__get_picture_url)
     
@@ -159,8 +162,8 @@ class FacebookProfile(models.Model):
     networks = property(__get_networks)
 
     def __get_email(self):
-        if self.__configure_me() and self.__facebook_info['proxied_email']:
-            return self.__facebook_info['proxied_email']
+        if self.__configure_me() and self.__facebook_info['email']:
+            return self.__facebook_info['email']
         else:
             return ""
     email = property(__get_email)
@@ -261,12 +264,12 @@ class FacebookProfile(models.Model):
         
         if len(ids_to_get) > 0:
             log.debug("Calling for %s" % ids_to_get)
-            tmp_info = _facebook_obj.graph.get_objects(ids_to_get)
+            tmp_info = _facebook_obj.graph.get_objects([str(x) for x in ids_to_get])
             
             all_info.extend(tmp_info)
             for info_key in tmp_info.keys():
                 info = tmp_info[info_key]
-                if info_key == self.facebook_id:
+                if info_key == str(self.facebook_id):
                     my_info = info
                 
                 if _facebook_obj.uid is None:
@@ -285,7 +288,7 @@ class FacebookProfile(models.Model):
     def __configure_me(self):
         """Calls facebook to populate profile info"""
         try:
-            log.debug( "Configure fb profile %s" % self.facebook_id )
+            log.debug("Configure fb profile %s" % self.facebook_id)
             if self.dummy or self.__facebook_info is None:
                 ids = getattr(_thread_locals, 'fbids', [self.facebook_id])
                 all_info, my_info = self.__get_facebook_info(ids)
@@ -297,7 +300,7 @@ class FacebookProfile(models.Model):
                 return True
         except ImproperlyConfigured, ex:
             log.error('Facebook not setup')
-        except URLError, ex:
+        except (facebook.GraphAPIError, URLError), ex:
             log.error('Fail loading profile: %s' % ex)
         # except IndexError, ex:
         #     log.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id, self.id, self.user_id))
