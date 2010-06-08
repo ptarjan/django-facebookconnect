@@ -30,7 +30,10 @@ from django.template import TemplateSyntaxError
 from django.http import HttpResponseRedirect,HttpResponse
 
 from facebookconnect.models import FacebookProfile
+from facebookconnect.localfb import LocalFacebookClient
 import facebook
+
+import threading
 
 try:
     from threading import local
@@ -40,14 +43,6 @@ except ImportError:
 _thread_locals = local()
 
 
-class Facebook(object):
-    """Dummy class to deal w/ pyfacebook dependency"""
-    
-    session_key = None
-    uid = None
-    graph = None
-
-
 class FacebookMiddleware(object):
     """Port of the FacebookMiddleware from pyfacebook"""
     
@@ -55,20 +50,15 @@ class FacebookMiddleware(object):
         fbuser = facebook.get_user_from_cookie(request.COOKIES, 
                                                settings.FACEBOOK_APP_ID, 
                                                settings.FACEBOOK_SECRET_KEY)
-        fb = Facebook()
         
-        if fbuser:
-            fb.uid = fbuser["uid"]
-            fb.session_key = fbuser["access_token"]
-            fb.graph = facebook.GraphAPI(fbuser["access_token"])
-        
-        _thread_locals.facebook = request.facebook = fb
+        request.facebook = LocalFacebookClient(fbuser["uid"], fbuser["access_token"])
+
 
 class FacebookConnectMiddleware(object):
     """Middlware to provide a working facebook object"""
     def process_request(self,request):
         """process incoming request"""
-
+        
         # clear out the storage of fb ids in the local thread
         if hasattr(_thread_locals,'fbids'):
             del _thread_locals.fbids

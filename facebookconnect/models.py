@@ -32,23 +32,16 @@ from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models.signals import post_delete
 
+from facebookconnect.localfb import get_facebook_client
+
+import threading
+
 try:
     from threading import local
 except ImportError:
     from django.utils._threading_local import local
 
 _thread_locals = local()
-
-
-def get_facebook_client():
-    """
-    Get the current Facebook object for the calling thread.
-
-    """
-    try:
-        return _thread_locals.facebook
-    except AttributeError:
-        raise ImproperlyConfigured('Make sure you have the Facebook middleware installed.')
 
 
 class FacebookBackend:
@@ -133,10 +126,9 @@ class FacebookProfile(models.Model):
         else: _thread_locals.fbids = [self.facebook_id]
             
     def __get_picture_url(self):
-        if self.__configure_me() and self.__facebook_info['pic_square_with_logo']:
-            return self.__facebook_info['pic_square_with_logo']
-        else:
-            return self.DUMMY_FACEBOOK_INFO['pic_square_with_logo']
+       _facebook_obj = get_facebook_client()
+       return "https://graph.facebook.com/me/picture?access_token=%s" % _facebook_obj.access_token
+    
     picture_url = property(__get_picture_url)
     
     def __get_full_name(self):
@@ -272,14 +264,15 @@ class FacebookProfile(models.Model):
             tmp_info = _facebook_obj.graph.get_objects(ids_to_get)
             
             all_info.extend(tmp_info)
-            for info in tmp_info:
-                if info['uid'] == self.facebook_id:
+            for info_key in tmp_info.keys():
+                info = tmp_info[info_key]
+                if info_key == self.facebook_id:
                     my_info = info
                 
                 if _facebook_obj.uid is None:
                     cache_key = 'fb_user_info_%s' % fbid
                 else:
-                    cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid,info['uid'])
+                    cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid,info['id'])
 
                 cache.set(
                     cache_key, 
