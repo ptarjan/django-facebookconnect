@@ -20,6 +20,9 @@ class LocalFacebookClient(object):
         self.graph = facebook.GraphAPI(access_token)
         _thread_locals.facebook = self
 
+    def __unicode__(self):
+        return "<LocalFacebookClient: %s>" % (self.uid)
+
 
 def get_facebook_client():
     try:

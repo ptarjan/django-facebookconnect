@@ -63,7 +63,7 @@ def facebook_login(request, redirect_url=None,
     if request.method == "POST":
         log.debug("OK logging in...")
         url = reverse('facebook_setup')
-        if request.POST.get(REDIRECT_FIELD_NAME,False):
+        if request.POST.get(REDIRECT_FIELD_NAME, False):
             url += "?%s=%s" % (REDIRECT_FIELD_NAME, request.POST[REDIRECT_FIELD_NAME])
         elif redirect_url:
             url += "?%s=%s" % (REDIRECT_FIELD_NAME, redirect_url)

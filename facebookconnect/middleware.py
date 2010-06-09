@@ -75,16 +75,8 @@ class FacebookConnectMiddleware(object):
             uid = fbuser["uid"] if fbuser else None
             if not request.path.startswith(settings.MEDIA_URL):
                 log.debug("Bona Fide: %s, Logged in: %s" % (bona_fide, uid))
-
-            if bona_fide and uid:
-                user = request.user
-                if user.is_anonymous():
-                    # user should be in setup
-                    setup_url = reverse('facebook_setup')
-                    if request.path != setup_url:
-                        request.facebook.session_key = None
-                        request.facebook.uid = None
-            else:
+            
+            if not bona_fide or not uid:
                 # we have no fb info, so we shouldn't have a fb only
                 # user logged in
                 user = request.user
