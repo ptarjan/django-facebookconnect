@@ -254,6 +254,7 @@ class FacebookProfile(models.Model):
                 if fbid == self.facebook_id:
                     my_info = fb_info_cache
             else:
+                log.debug("User info not found in cache at %s" % cache_key)
                 ids_to_get.append(fbid)
         
         if len(ids_to_get) > 0:
@@ -269,8 +270,9 @@ class FacebookProfile(models.Model):
                 if _facebook_obj.uid is None:
                     cache_key = 'fb_user_info_%s' % fbid
                 else:
-                    cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid,info['id'])
-
+                    cache_key = 'fb_user_info_%s_%s' % (_facebook_obj.uid, info['id'])
+                
+                log.debug('Caching user info with key %s' % cache_key)
                 cache.set(
                     cache_key, 
                     info, 
@@ -296,6 +298,8 @@ class FacebookProfile(models.Model):
             log.error('Facebook not setup')
         except (facebook.GraphAPIError, URLError), ex:
             log.error('Fail loading profile: %s' % ex)
+        #except ValueError, ex:
+        #    log.error('Fail parsing profile: %s' % ex)
         # except IndexError, ex:
         #     log.error("Couldn't retrieve FB info for FBID: '%s' profile: '%s' user: '%s'" % (self.facebook_id, self.id, self.user_id))
         

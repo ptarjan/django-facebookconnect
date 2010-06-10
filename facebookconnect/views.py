@@ -131,7 +131,9 @@ def facebook_logout(request, redirect_url=None):
     url = getattr(settings,'LOGOUT_REDIRECT_URL',redirect_url) or '/'
     return HttpResponseRedirect(url)
     
-def setup(request,redirect_url=None,
+def setup(request,
+          redirect_url=None,
+          login_form_class=AuthenticationForm,
           registration_form_class=FacebookUserCreationForm,
           template_name='facebook/setup.html',
           extra_context=None):
@@ -172,7 +174,7 @@ def setup(request,redirect_url=None,
         return HttpResponseRedirect(url)
 
     #setup forms
-    login_form = AuthenticationForm()
+    login_form = login_form_class()
     registration_form = registration_form_class()
 
     #figure out where to go after setup
@@ -235,7 +237,7 @@ def setup(request,redirect_url=None,
     
         #user logs in in with an existing account, and the two are linked.
         elif request.POST.get('login',False):
-            login_form = AuthenticationForm(data=request.POST)
+            login_form = login_form_class(data=request.POST)
 
             if login_form.is_valid():
                 user = login_form.get_user()
@@ -267,7 +269,7 @@ def setup(request,redirect_url=None,
     else:
         log.debug('Setting up form...')
         request.user.facebook_profile = profile = FacebookProfile(facebook_id=request.facebook.uid)
-        login_form = AuthenticationForm(request)
+        login_form = login_form_class(request)
         log.debug('creating a dummy user')
         fname = lname = ''
         if profile.first_name != "(Private)":
