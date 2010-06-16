@@ -22,6 +22,7 @@ import logging
 log = logging.getLogger('facebookconnect.models')
 import sha, random
 from urllib2 import URLError
+from urlparse import urlparse
 
 import facebook
 
@@ -95,7 +96,6 @@ class FacebookProfile(models.Model):
     __facebook_info = None
     dummy = True
 
-    FACEBOOK_FIELDS = ['uid,name,first_name,last_name,pic_square_with_logo,affiliations,status,proxied_email']
     DUMMY_FACEBOOK_INFO = {
         'uid': 0,
         'name': '(Private)',
@@ -114,60 +114,173 @@ class FacebookProfile(models.Model):
             self.DUMMY_FACEBOOK_INFO = settings.DUMMY_FACEBOOK_INFO
         except AttributeError:
             pass
-        try:
-            self.FACEBOOK_FIELDS = settings.FACEBOOK_FIELDS
-        except AttributeError:
-            pass
         
         if hasattr(_thread_locals,'fbids'):
             if ( self.facebook_id 
                     and self.facebook_id not in _thread_locals.fbids ):
                 _thread_locals.fbids.append(str(self.facebook_id))
         else: _thread_locals.fbids = [self.facebook_id]
-            
+    
+    
+    def __get_first_name(self):
+        if self.__configure_me() and self.__facebook_info["first_name"]:
+            return u"%s" % self.__facebook_info["first_name"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["first_name"]
+    first_name = property(__get_first_name)
+
+    def __get_last_name(self):
+        if self.__configure_me() and self.__facebook_info["last_name"]:
+            return u"%s" % self.__facebook_info["last_name"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["last_name"]
+    last_name = property(__get_last_name)
+    
+    def __get_name(self):
+        if self.__configure_me() and self.__facebook_info["name"]:
+            return u"%s" % self.__facebook_info["name"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["name"]
+    name = property(__get_name)
+    
+    def __get_link(self):
+        if self.__configure_me() and self.__facebook_info["link"]:
+            return u"%s" % self.__facebook_info["link"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["link"]
+    link = property(__get_link)
+        
+    def __get_about(self):
+        if self.__configure_me() and self.__facebook_info["about"]:
+            return u"%s" % self.__facebook_info["about"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["about"]
+    about = property(__get_about)
+
+    def __get_birthday(self):
+        if self.__configure_me() and self.__facebook_info["birthday"]:
+            return u"%s" % self.__facebook_info["birthday"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["birthday"]
+    birthday = property(__get_birthday)
+    
+    def __get_work(self):
+        if self.__configure_me() and self.__facebook_info["work"]:
+            return u"%s" % self.__facebook_info["work"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["work"]
+    work = property(__get_work)
+
+    def __get_education(self):
+        if self.__configure_me() and self.__facebook_info["education"]:
+            return u"%s" % self.__facebook_info["education"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["education"]
+    education = property(__get_education)
+    
+    def __get_email(self):
+        if self.__configure_me() and self.__facebook_info["email"]:
+            return u"%s" % self.__facebook_info["email"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["email"]
+    email = property(__get_email)
+    
+    def __get_website(self):
+        if self.__configure_me() and self.__facebook_info["website"]:
+            return u"%s" % self.__facebook_info["website"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["website"]
+    website = property(__get_website)
+
+    def __get_hometown(self):
+        if self.__configure_me() and self.__facebook_info["hometown"]:
+            return u"%s" % self.__facebook_info["hometown"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["hometown"]
+    hometown = property(__get_hometown)
+
+    def __get_location(self):
+        if self.__configure_me() and self.__facebook_info["location"]:
+            return u"%s" % self.__facebook_info["location"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["location"]
+    location = property(__get_location)
+
+    def __get_gender(self):
+        if self.__configure_me() and self.__facebook_info["gender"]:
+            return u"%s" % self.__facebook_info["gender"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["gender"]
+    gender = property(__get_gender)
+
+    def __get_interested_in(self):
+        if self.__configure_me() and self.__facebook_info["interested_in"]:
+            return self.__facebook_info["interested_in"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["interested_in"]
+    interested_in = property(__get_interested_in)
+    
+    def __get_meeting_for(self):
+        if self.__configure_me() and self.__facebook_info["meeting_for"]:
+            return self.__facebook_info["meeting_for"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["meeting_for"]
+    meeting_for = property(__get_meeting_for)
+
+    def __get_relationship_status(self):
+        if self.__configure_me() and self.__facebook_info["relationship_status"]:
+            return u"%s" % self.__facebook_info["relationship_status"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["relationship_status"]
+    relationship_status = property(__get_relationship_status)
+
+    def __get_religion(self):
+        if self.__configure_me() and self.__facebook_info["religion"]:
+            return u"%s" % self.__facebook_info["religion"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["religion"]
+    religion = property(__get_religion)
+    
+    def __get_political(self):
+        if self.__configure_me() and self.__facebook_info["political"]:
+            return u"%s" % self.__facebook_info["political"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["political"]
+    political = property(__get_political)
+
+    def __get_verified(self):
+        if self.__configure_me() and self.__facebook_info["verified"]:
+            return u"%s" % self.__facebook_info["verified"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["verified"]
+    verified = property(__get_verified)
+
+    def __get_significant_other(self):
+        if self.__configure_me() and self.__facebook_info["significant_other"]:
+            return u"%s" % self.__facebook_info["significant_other"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["significant_other"]
+    significant_other = property(__get_significant_other)
+    
+    def __get_timezone(self):
+        if self.__configure_me() and self.__facebook_info["timezone"]:
+            return u"%s" % self.__facebook_info["timezone"]
+        else:
+            return self.DUMMY_FACEBOOK_INFO["timezone"]
+    timezone = property(__get_timezone)
+    
+    def __get_username(self):
+        return self.facebook_id if "profile.php" in self.link else urlparse(self.link).path.split("/")[1]
+    username = property(__get_username)
+    
     def __get_picture_url(self):
        _facebook_obj = get_facebook_client()
        if self.__configure_me():
            return "https://graph.facebook.com/me/picture?access_token=%s" % _facebook_obj.access_token
        else:
            return self.DUMMY_FACEBOOK_INFO['pic_square_with_logo']
-    
     picture_url = property(__get_picture_url)
     
-    def __get_full_name(self):
-        if self.__configure_me() and self.__facebook_info['name']:
-            return u"%s" % self.__facebook_info['name']
-        else:
-            return self.DUMMY_FACEBOOK_INFO['name']
-    full_name = property(__get_full_name)
-    
-    def __get_first_name(self):
-        if self.__configure_me() and self.__facebook_info['first_name']:
-            return u"%s" % self.__facebook_info['first_name']
-        else:
-            return self.DUMMY_FACEBOOK_INFO['first_name']
-    first_name = property(__get_first_name)
-    
-    def __get_last_name(self):
-        if self.__configure_me() and self.__facebook_info['last_name']:
-            return u"%s" % self.__facebook_info['last_name']
-        else:
-            return self.DUMMY_FACEBOOK_INFO['last_name']
-    last_name = property(__get_last_name)
-    
-    def __get_networks(self):
-        if self.__configure_me():
-            return self.__facebook_info['affiliations']
-        else: return []
-    networks = property(__get_networks)
-
-    def __get_email(self):
-        if self.__configure_me() and self.__facebook_info['email']:
-            return self.__facebook_info['email']
-        else:
-            return ""
-    email = property(__get_email)
-
     def facebook_only(self):
         """return true if this user uses facebook and only facebook"""
         if self.facebook_id and str(self.facebook_id) == self.user.username:
@@ -260,6 +373,7 @@ class FacebookProfile(models.Model):
         if len(ids_to_get) > 0:
             log.debug("Calling for %s" % ids_to_get)
             tmp_info = _facebook_obj.graph.get_objects([str(x) for x in ids_to_get])
+            log.debug("User info for %s: %s" % (ids_to_get, tmp_info))
             
             all_info.extend(tmp_info)
             for info_key in tmp_info.keys():

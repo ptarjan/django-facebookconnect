@@ -197,10 +197,11 @@ def setup(request,
         log.debug('Submitted form')
         #lets setup a facebook only account. The user will have to use
         #facebook to login.
+        # TODO: This should still go through a form to enforce our validation rules
         if request.POST.get('facebook_only',False):
             log.debug('Facebook Only')
             profile = FacebookProfile(facebook_id=request.facebook.uid)
-            user = User(username=request.facebook.uid,
+            user = User(username=profile.username,
                         email=profile.email)
             user.set_unusable_password()
             user.save()
@@ -289,8 +290,8 @@ def setup(request,
         context[key] = callable(value) and value() or value
 
     template_dict = {
-        "login_form":login_form,
-        "registration_form":registration_form
+        "login_form": login_form,
+        "registration_form": registration_form
     }
     
     # we only need to set next if its been passed in the querystring or post vars
