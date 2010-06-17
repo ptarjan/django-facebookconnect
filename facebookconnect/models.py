@@ -142,6 +142,7 @@ class FacebookProfile(models.Model):
         else:
             return self.DUMMY_FACEBOOK_INFO["name"]
     name = property(__get_name)
+    full_name = property(__get_name)
     
     def __get_link(self):
         if self.__configure_me() and self.__facebook_info["link"]:
