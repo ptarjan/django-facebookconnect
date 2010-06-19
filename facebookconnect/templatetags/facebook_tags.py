@@ -85,22 +85,18 @@ def show_facebook_status(context, user):
     return {'string':p.status}
 
 @register.inclusion_tag('facebook/show_string.html', takes_context=True)
-def show_facebook_photo(context, user):
+def show_facebook_photo(context, user, size="square"):
     if isinstance(user, FacebookProfile):
         p = user
     else:
         p = user.facebook_profile
-    if p.get_absolute_url(): url = p.get_absolute_url()
-    else: url = ""
-    if p.picture_url: pic_url = p.picture_url
-    else: pic_url = ""
     if p.full_name: name = p.full_name
     else: name = ""
     if getattr(settings, 'WIDGET_MODE', None):
         #if we're rendering widgets, link direct to facebook
         return {'string':u'<fb:profile_pic uid="%s" facebook-logo="true" />' % (p.facebook_id)}
     else:
-        return {'string':u'<a href="%s"><img src="%s" alt="%s"/></a>' % (url, pic_url, name)}
+        return {'string':u' <img src="http://graph.facebook.com/%s/picture?type=%s" alt="%s" />' % (p.username, size, name)}
 
 @register.inclusion_tag('facebook/display.html', takes_context=True)
 def show_facebook_info(context, user):
