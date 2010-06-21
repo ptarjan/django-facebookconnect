@@ -279,7 +279,12 @@ def setup(request,
             lname = profile.last_name
         user = User(first_name=fname, last_name=lname)
         
-        initial = {'username': profile.username}
+        # set up our defaults
+        initial = {}
+        
+        if profile.username != str(profile.facebook_id):
+            initial["username"] = profile.username
+        
         try:
             initial["email"] = profile.email
         except KeyError:
