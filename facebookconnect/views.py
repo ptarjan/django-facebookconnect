@@ -278,7 +278,14 @@ def setup(request,
         if profile.last_name != "(Private)":
             lname = profile.last_name
         user = User(first_name=fname, last_name=lname)
-        registration_form = registration_form_class(instance=user)
+        
+        initial = {'username': profile.username}
+        try:
+            initial["email"] = profile.email
+        except KeyError:
+            initial["email"] = None
+        
+        registration_form = registration_form_class(instance=user, initial=initial)
     
     log.debug('going all the way...')
     
