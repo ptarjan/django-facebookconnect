@@ -315,6 +315,22 @@ def setup(request,
         template_dict,
         context_instance=context)
 
+
+def detach(request):
+    log.debug('in detach view')
+    
+    #you need to be logged into facebook.
+    if not request.facebook.uid:
+        log.debug('Need to be logged into facebook')
+        return HttpResponseRedirect(reverse(facebook_login))
+    
+    if request.method == "POST" and request.user.facebook_profile:
+        request.user.facebook_profile.delete()
+        log.debug('profile detached')
+    
+    return HttpResponseRedirect(reverse(facebook_logout))
+
+
 class FacebookAuthError(Exception):
     def __init__(self, message):
         self.message = message
