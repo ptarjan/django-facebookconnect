@@ -374,7 +374,6 @@ class FacebookProfile(models.Model):
         if len(ids_to_get) > 0:
             log.debug("Calling for %s" % ids_to_get)
             tmp_info = _facebook_obj.graph.get_objects([str(x) for x in ids_to_get])
-            log.debug("User info for %s: %s" % (ids_to_get, tmp_info))
             
             all_info.extend(tmp_info)
             for info_key in tmp_info.keys():
