@@ -28,10 +28,12 @@ from django.contrib.auth import authenticate, login, logout, REDIRECT_FIELD_NAME
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 from facebookconnect.models import FacebookProfile
 from facebookconnect.forms import FacebookUserCreationForm
 
+@csrf_exempt
 def facebook_login(request, redirect_url=None,
                    template_name='facebook/login.html',
                    extra_context=None):
