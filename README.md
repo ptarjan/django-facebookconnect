@@ -63,8 +63,9 @@ Facebook API
 
 Setup a Facebook applicaiton here: http://upload.facebook.com. You'll need to have a personal Facebook account to set this up. Once you add a Facebook app, go to the connect section of the setup and provide the url for your Facebook Connect site (developers can enter localhost). Once you save the settings, you get an API key and secret. In your django settings file enter this stuff:
 
-    FACEBOOK_API_KEY = '00000000000000000000000000000000'
-    FACEBOOK_SECRET_KEY = '00000000000000000000000000000000'
+    FACEBOOK_API_KEY = '1234567890abcdef1234567890abcdef'
+    FACEBOOK_APP_ID = '123456789012345'
+    FACEBOOK_SECRET_KEY = '1234567890abcdef1234567890abcdef'
     FACEBOOK_INTERNAL = True
 
 The third setting is for pyfacebook. I don't know what it does completely. But it does cause pyfacebook to hold on to expired facebook sessions when it's False.
