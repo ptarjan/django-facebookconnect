@@ -34,6 +34,7 @@ Both pyfacebook and django-facebookconnect have middleware that needs to be used
         'facebook.djangofb.FacebookMiddleware',
         'django.middleware.common.CommonMiddleware',
         'django.contrib.auth.middleware.AuthenticationMiddleware',
+        'facebookconnect.middleware.FacebookMiddleware',
         'facebookconnect.middleware.FacebookConnectMiddleware',
     )
 
