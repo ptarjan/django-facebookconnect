@@ -20,7 +20,7 @@
 import datetime
 import logging
 log = logging.getLogger('facebookconnect.models')
-import sha, random
+import random
 from urllib2 import URLError
 from urlparse import urlparse
 
